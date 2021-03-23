@@ -7,18 +7,23 @@ try:
     # SELECT * FROM txo_cp GROUP by 日期 ORDER by 日期 DESC 以日期做排序範例
     sqlData = cur.fetchall()
     for i in range(len(sqlData)): #len(sqlData)計算抓取幾筆資料
-       
+        
+        a= sqlData[i][1].find('w')
+        print([a])
+        # week = '週選'
         # try:
-        #     if sqlData[i][1].find('w') and sqlData[i][5].find('結算日'):
-        #        pass 
            
-        # except: 
-            # week = '週選'
-            # print(week)
-            cur.execute("update txo_c加p set  合約代號='週選' where "+str(sqlData[i][1])+" like 'W' ") 
+
+            # if sqlData[i][1].find('w') and sqlData[i][5] is None:                    
+            #     print('周選')
+            # else min(sorted(sqlData[i][1])):
+            #     print('周選2')
+            
+        # except:            
+        #    pass
 
 
-    conn.commit()
+    # conn.commit()
 
 finally:
     conn.close()

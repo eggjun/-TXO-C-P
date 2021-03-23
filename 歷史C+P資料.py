@@ -15,7 +15,7 @@ try:
     chrome.get('https://www.taifex.com.tw/cht/3/optDailyMarketSummary') #連結測試網址
    
     
-    for j in range(0,1): #250個交易日 * 21年
+    for j in range(0,5250): #250個交易日 * 21年
         
         timeSleep1To5Random() #等待數秒後繼續執行
         soup = BeautifulSoup(chrome.page_source , 'html5lib') #解析網頁資訊
