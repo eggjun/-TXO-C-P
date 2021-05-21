@@ -1,0 +1,52 @@
+1.select board_id, chip_id, data_ax, gate_ax, dft_mode
+from at_alr_rpf
+where ddate_ttime > DATE_SUB(curdate(),INTERVAL 1 DAY)
+
+
+2.select distinct op_id ,eqp_id
+from aryods_h_sheet_oper_ods
+where logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY) and op_id = 'AS-CVD'
+
+
+2.2.select distinct rp_flag, dft_mode
+from at_tos_rpf
+where ddate_ttime > DATE_SUB(curdate(),INTERVAL 1 DAY) and rp_flag = 'S'
+
+
+3.select op_id, model_no,eqp_id
+from aryods_h_sheet_oper_ods
+where logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY) and (model_no like '%32%'and (op_id = 'AS-CVD' or op_id = 'SL-SPT')or (model_no like '%55Q7%' and op_id = 'GL-IEX'))
+
+
+4.select fun, imp_defect, eqp, unit, min_y, key_param,pm_plan_day
+from test.y2x_pm_type
+where pm_plan_day between '2021-03-20' and '2021-03-29'
+
+
+5.select distinct op_id
+from aryods_h_sheet_oper_ods
+where logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY) and (op_id like 'GL-%' or op_id like 'AR-T%')
+
+
+6.select sheet_id_chip_id, op_seq,count(op_id)
+from aryods_h_sheet_oper_ods
+where sheet_id_chip_id = 'Z31K3981B' and op_seq like '1%'
+
+
+7.select op_id, eqp_id, count(*)
+from aryods_h_sheet_oper_ods
+where  op_id like 'GL-%A' and  logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY)
+group by op_id,eqp_id
+
+
+8.select op_id, eqp_id, count(*)
+from aryods_h_sheet_oper_ods
+where  op_id like 'GL-%A' and  logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY)
+group by op_id,eqp_id
+having count(*)>2000
+
+
+9.select op_id, concat(eqp_id,chamber_id_list) unit,count(*) sheet_move
+from aryods_h_sheet_oper_ods
+where op_id = 'AS-CVD' and logoff_time > DATE_SUB(curdate(),INTERVAL 1 DAY)
+group by op_id, concat(eqp_id,chamber_id_list)

@@ -1,0 +1,76 @@
+1.
+select 'All'
+union
+select distinct(concat('T',substring(model_no,2,4)))
+from at_alr_rpf
+where ddate_ttime > DATE_SUB(curdate(),INTERVAL 1 DAY)
+
+-----------------------------------------------------------------------------
+
+2.
+select a1.sheet_id_chip_id, a1.op_id, a1.eqp_id ,(a1.eqp_id)as 'AR_TST_EQP'
+from (select op_id
+from aryods_h_sheet_oper_ods
+where op_id = 'AR-TST') a2, aryods_h_sheet_oper_ods a1
+where a1.sheet_id_chip_id = a2.sheet_id_chip_id and (a1.sheet_id_chip_id = 'W91K39Y2D' or a1.sheet_id_chip_id = 'Z31K3AA9M')
+group by a1.sheet_id_chip_id, a1.op_id, a1.eqp_id
+
+	\///////////////////////////////////////////////////////////////////////////////\
+
+select a1.sheet_id_chip_id, a1.op_id, a1.eqp_id,
+	(select logoff_time
+	from aryods_h_sheet_oper_ods K
+	where K.op_id = 'AR-TST' and K.sheet_id_chip_id = a1.sheet_id_chip_id
+	and K.logoff_time = 
+		(
+			select max(K2.logoff_time)
+			from aryods_h_sheet_oper_ods K2
+			where K2.op_id = 'AR-TST' and K2.sheet_id_chip_id = K.sheet_id_chip_id
+		)
+	) AR_TST_EQP
+from aryods_h_sheet_oper_ods a1
+where  a1.sheet_id_chip_id = 'K11K27J8H' and a1.op_id = 'AS-CVD'
+/*group by a1.sheet_id_chip_id, a1.op_id, a1.eqp_id*/
+
+
+-----------------------------------------------------------------------------
+
+3.
+select a1.sheet_id_chip_id, a1.op_id, a1.eqp_id
+from aryods_h_sheet_oper_ods a1
+where exists (select * from aryods_h_sheet_oper_ods where op_id = 'AR-TST' and sheet_id_chip_id = a1.sheet_id_chip_id)
+and (a1.sheet_id_chip_id = 'Z31K3AA9M')
+
+
+
+
+
+-----------------------------------------------------------------------------
+
+4.
+select (case when dft_mode like 'P%' then  dft_mode else 'Line_Type' end) dft_group, count(*) Qty
+from at_alr_rpf
+where  ddate_ttime > DATE_SUB(curdate(),INTERVAL 0.1 DAY)
+group by (case when dft_mode like 'P%' then dft_mode else 'Line_Type' end) *н╫зялс
+
+-----------------------------------------------------------------------------
+
+5.
+select  model_no,op_id, logoff_time, eqp_id, count(sheet_id_chip_id) sheet_move, sum(defect_count) defect_count_total,
+(sum(defect_count)/count(sheet_id_chip_id)) defect_density
+from
+(
+  select a1.model_no, date_format(a1.logoff_time,'%Y-%m-%d') logoff_time, a1.eqp_id, a1.sheet_id_chip_id,a1.op_id,
+    (
+    select count(*)
+    from at_alr_rpf
+    where a1.sheet_id_chip_id = board_id
+    and trim(retype) = 'T-M2-Particle'
+    ) defect_count
+  from aryods_h_sheet_oper_ods a1
+  where a1.logoff_time between str_to_date('2021-03-01','%Y-%m-%d') and str_to_date('2021-03-06','%Y-%m-%d')
+  and a1.model_no like '%55Q7%' and a1.op_id = 'SL-SPT'
+  and exists (select * from aryods_h_sheet_oper_ods  where op_id = 'AR-TST' and sheet_id_chip_id = a1.sheet_id_chip_id)
+ 
+) defect
+group by logoff_time, eqp_id, model_no,op_id

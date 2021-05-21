@@ -1,0 +1,39 @@
+1.
+select distinct chip_id ,dft_mode
+from at_alr_rpf
+where chip_id = 'Z31K3981BF' and (dft_mode like 'P1%' or dft_mode like 'ITP OPEN%' or dft_mode like 'S%')
+order by (case
+when dft_mode like 'P1%' then 1
+when dft_mode like 'ITP OPEN%' then 2
+when dft_mode like 'S%' then 3  end)
+
+-------------------------------------------------------------------------------
+
+2.
+select (case when dft_mode like 'P%' then  dft_mode else 'Line_Type' end) dft_group, count(*) Qty
+from at_alr_rpf
+where  ddate_ttime > DATE_SUB(curdate(),INTERVAL 0.1 DAY)
+group by (case when dft_mode like 'P%' then dft_mode else 'Line_Type' end)
+
+-------------------------------------------------------------------------------
+
+
+3.
+select  model_no,op_id, logoff_time, eqp_id, count(sheet_id_chip_id) sheet_move, sum(defect_count) defect_count_total,
+(sum(defect_count)/count(sheet_id_chip_id)) defect_density
+from
+(
+  select a1.model_no, date_format(a1.logoff_time,'%Y-%m-%d') logoff_time, a1.eqp_id, a1.sheet_id_chip_id,a1.op_id,
+    (
+    select count(*)
+    from at_alr_rpf
+    where a1.sheet_id_chip_id = board_id
+    and trim(retype) = 'T-M2-Particle'
+    ) defect_count
+  from aryods_h_sheet_oper_ods a1
+  where a1.logoff_time between str_to_date('2021-03-01','%Y-%m-%d') and str_to_date('2021-03-06','%Y-%m-%d')
+  and a1.model_no like '%55Q7%' and a1.op_id = 'SL-SPT'
+  and exists (select * from aryods_h_sheet_oper_ods  where op_id = 'AR-TST' and sheet_id_chip_id = a1.sheet_id_chip_id)
+ 
+) defect
+group by logoff_time, eqp_id, model_no,op_id

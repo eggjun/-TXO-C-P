@@ -1,0 +1,158 @@
+
+
+
+'if ary2(i) <> " "  then
+					
+
+					'myStr = "INSERT INTO l8bi0.l8b_ARY_FIB_Data_detail (main_pk, element, numerical_value)"
+					'myStr = myStr & " VALUES ('" & new_main_pk & "','" & ary(i) & "','" & ary2(i) & "' ,now()) "
+			
+					'Set myrs = myconn.Execute("SET NAMES 'big5'")			'定義編碼
+					'Set myrs = myconn.Execute(myStr)			'執行sql
+
+				'end if	
+					
+
+
+
+
+
+
+myStr = "delete from l8bi0.l8b_ARY_FIB_Data_detail where main_pk='" & main_pk & "'"			'將資料庫內的yyx_id與回傳的yyx_id的值做比較一樣的話就刪除
+	set myrsTemp = myconn.Execute(myStr)				'執行sql
+
+
+
+
+
+
+
+/*sql = "SELECT main_pk, sheet_id, laser_defect, cut_op_id, x, y, gate, data, defect_code, sub_defect, logoff_time, eqp_chamber, fib_photo_1, fib_photo_2, fib_photo_3,  owner, mechanism, action FROM l8bi0.l8b_ARY_FIB_Data where main_pk='" & main_pk & "' "
+response.write(sql)
+response.end
+myrs.CursorLocation = 3	
+myrs.Open "SET NAMES 'big5'", myconn
+myrs.Open sql, myconn
+if Not myrs.EOF then
+
+	sheet_id = myrs.Fields("sheet_id")
+	laser_defect = myrs.Fields("laser_defect")
+	cut_op_id = myrs.Fields("cut_op_id")
+	x = myrs.Fields("x")	
+	y = myrs.Fields("y")
+	gate = myrs.Fields("gate")
+	data = myrs.Fields("data")
+	defect_code = myrs.Fields("defect_code")
+	sub_defect = myrs.Fields("sub_defect")
+	logoff_time = myrs.Fields("logoff_time")
+	eqp_chamber = myrs.Fields("eqp_chamber")
+	fib_photo_1 = myrs.Fields("fib_photo_1")
+	fib_photo_2 = myrs.Fields("fib_photo_2")
+	fib_photo_3 = myrs.Fields("fib_photo_3")
+
+	owner = myrs.Fields("owner")	
+	mechanism = myrs.Fields("mechanism")
+	action = myrs.Fields("action")
+	
+	
+end if
+myrs.close*/
+
+
+
+, (SELECT GROUP_CONCAT(concat(element, ':', numerical_value)) FROM l8b_ARY_FIB_Data_detail d where d.main_pk = a.main_pk having MAX(d.main_pk)) as element_value
+
+
+
+myStr = "select max(main_pk) main_pk from l8bi0.l8b_ARY_FIB_Data where lm_time >= date_sub(now(),interval 5 second)  " 
+    set myrs = myconn.Execute("SET NAMES 'big5'")
+    set myrs = myconn.Execute(myStr)
+    new_main_pk = myrs("main_pk") 
+
+	if new_main_pk <> " " then
+
+		str = "Al,Ba,Br,C,Ca,Cl,Cr,Cu,F,Fe,In,Mg,Mn,Mo,N,Ni,O,Os,P,S,Si,Sr,Ti,Zr"
+		ary = Split(str,",")
+
+		for i=0 to ubound(ary)
+			if ary(i) <> " " and element = ary(i) then
+
+				myStr = "INSERT INTO l8bi0.l8b_ARY_FIB_Data_detail (main_pk, element, numerical_value)"
+				myStr = myStr & " VALUES ('" & new_main_pk & "','" & element & "','" & numerical_value & "' ,now()) "
+		
+				Set myrs = myconn.Execute("SET NAMES 'big5'")			'定義編碼
+				Set myrs = myconn.Execute(myStr)			'執行sql
+				
+			end if
+		next
+	end if
+		
+
+myStr = "select max(main_pk) main_pk from l8bi0.l8b_ARY_FIB_Data where lm_time >= date_sub(now(),interval 5 second)  " 
+    set myrs = myconn.Execute("SET NAMES 'big5'")
+    set myrs = myconn.Execute(myStr)
+	
+    new_main_pk = myrs("main_pk") 
+	'response.write(new_main_pk)
+
+	if new_main_pk <> " " then
+
+
+		str = " "& Al &","& Ba &","& Br &","& C &","& Ca &","& Cl &","& Cr &","& Cu &","& F &","& Fe &","& In1 &","& Mg &","& Mn &","& Mo &","& N &","& Ni &","& O &","& Os &","& P &","& S &","& Si &","& Sr &","& Ti &","& Zr &" "
+			
+		
+		ary = Split(str,",")
+			
+		
+		'response.write(ary(6))				
+		'response.end
+
+		for i=0 to ubound(ary)											
+			'response.write(ary(i))
+
+			if  ary(i) <> " "  then
+					
+				'response.write(ary(i))
+				myStr = "INSERT INTO l8bi0.l8b_ARY_FIB_Data_detail (main_pk, element, numerical_value)"
+				myStr = myStr & " VALUES ('" & new_main_pk & "','" & ary(i) & "','" & ary(i) & "' ,now()) "
+			
+				Set myrs = myconn.Execute("SET NAMES 'big5'")			'定義編碼
+				Set myrs = myconn.Execute(myStr)			'執行sql
+
+			end if	
+					
+			
+		next
+		response.end 	
+	end if
+myrs.close	
+
+str = "Al,Ba,Br,C,Ca,Cl,Cr,Cu,F,Fe,In,Mg,Mn,Mo,N,Ni,O,Os,P,S,Si,Sr,Ti,Zr"
+
+
+'str = " "& <%=Al%> &","& <%=Ba%> &","& <%=Br%> &","& <%=C%> &","& <%=Ca%> &","& <%=Cl%> &","& <%=Cr%> &","& <%=Cu%> &","& <%=F%> &","& <%=Fe%> &","& <%=In1%> &","& <%=Mg%> &","& <%=Mn%> &","& <%=Mo%> &","& <%=N%> &","& <%=Ni%> &","& <%=O%> &","& <%=Os%> &","& <%=P%> &","& <%=S%> &","& <%=Si%> &","& <%=Sr%> &","& <%=Ti%> &","& <%=Zr%> &" "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

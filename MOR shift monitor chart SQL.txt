@@ -1,0 +1,35 @@
+select a.chip_id, a.gate_ax,a.dft_mode,a.route,a.model_no,a.data_ax,
+(
+select min(abs(a.gate_ax - d.gate_ax))
+from at.alr_rpf d
+where d.chip_id = a.chip_id
+and trim(d.route) = 'Manual'
+and trim(d.retype) <> ' '
+)shift_gate_ax,
+(
+select min(abs(a.data_ax - e.data_ax))
+from at.alr_rpf e
+where e.chip_id = a.chip_id
+and trim(e.route) = 'Manual'
+and trim(e.retype) <> ' ' 
+)shift_data_ax
+from at.alr_rpf a
+where a.chip_id = '721K48G3EB'
+and trim(a.route) = 'Manual'
+and trim(a.rp_flag) = 'Y'
+and trim(a.dft_mode) = 'P1-BIN02'
+and trim(a.retype) is NULL
+and exists
+(
+select b.chip_id,count(b.chip_id)
+from at.alr_rpf b
+where a.chip_id = b.chip_id
+and trim(b.route) = 'Manual'
+and trim(b.rp_flag) = 'Y'
+and trim(b.dft_mode) = 'P1-BIN02'
+and trim(b.retype) is NULL
+group by b.chip_id having count(b.chip_id) = 1
+)
+
+
+

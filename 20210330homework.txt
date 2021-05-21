@@ -1,0 +1,58 @@
+1.
+select distinct chip_id ,dft_mode
+from at_alr_rpf
+where chip_id = 'Z31K3981BF' and (dft_mode like 'P1%' or dft_mode like 'ITP OPEN%' or dft_mode like 'S%')
+order by (case
+when dft_mode like 'P1%' then 1
+when dft_mode like 'ITP OPEN%' then 2
+when dft_mode like 'S%' then 3  end)
+
+
+2.
+
+create table `l8bi0`.`student`(
+  `SID` int(10),
+  `First_name` varchar(30) DEFAULT NULL,
+  `Last_name` varchar(10) DEFAULT NULL,
+  `Address` varchar(20) DEFAULT NULL,
+  `City` varchar(20) DEFAULT NULL,
+  `Country` varchar(10) DEFAULT NULL,
+  `Birth_Date` datetime DEFAULT NULL,
+  `create_timep` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+)
+
+-----------------------------------------------------------------------
+ 
+create table `l8bi0`.`University`(
+  `Last_name` varchar(10) DEFAULT NULL,
+  `University` varchar(20) DEFAULT NULL
+)
+
+-----------------------------------------------------------------------
+
+alter table student add primary key (SID)
+
+-----------------------------------------------------------------------
+
+insert into student (SID, First_name, Last_name, Address, City, Country, Birth_Date, create_timep)
+values ('1', 'HUNG', 'JAMES', 'taichung', 'taichung', 'taichung', '2021-08-05 00:00:00', '2021-03-30 11:40:17'),
+('2', 'HUNG', 'ZIPPER', 'taichung', 'taichung', 'taichung', '2021-08-05 00:00:00', '2021-03-30 11:41:20'),
+('3', 'HUNG', 'BUTTON', 'taichung', 'taichung', 'taichung', '2021-08-05 00:00:00', '2021-03-30 11:41:40')
+
+-----------------------------------------------------------------------
+
+insert into University (Last_name, University)
+values ('JAMES', 'Chaoyang'),('BUTTON', 'National'),('ZIPPER', 'National')
+
+-----------------------------------------------------------------------
+
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`L8BI0`@`%` SQL SECURITY DEFINER VIEW `l8b_view`.`student_0329`
+AS select s.SID, s.First_name, s.Address, s.City, s.Country, s.Birth_Date, s.create_timep,u.university
+from student s, University u
+where s.Last_name = u.Last_name
+group by s.SID, s.First_name, s.Address, s.City, s.Country, s.Birth_Date, s.create_timep,u.university
+
+
+
+

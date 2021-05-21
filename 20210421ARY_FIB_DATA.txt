@@ -1,0 +1,340 @@
+'sql = "SELECT afd.main_pk, afd.sheet_id, afd.laser_defect, afd.cut_op_id, afd.x, afd.y, afd.gate, afd.data, afd.defect_code, afd.sub_defect,afd.logoff_time, afd.eqp_chamber, afd.fib_photo1, afd.fib_photo2, afd.fib_photo3, afd.lm_time, afd.owner, afd.mechanism, afd.action ,afdd.pk, afdd.main_pk, afdd.element, afdd.numerical_value FROM l8bi0.l8b_ARY_FIB_Data afd, l8bi0.l8b_ARY_FIB_Data_detail afdd where afd.main_pk = afdd.main_pk order by lm_time desc "'
+
+
+sql = "SELECT main_pk, sheet_id, laser_defect, cut_op_id, x, y, gate, data, sub_defect, owner, mechanism, action FROM l8bi0.l8b_ARY_FIB_Data where main_pk='" & main_pk & "' order by week,site, stage "
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+<%
+'On Error Resume Next
+
+'連結資料庫
+set myconn = Server.CreateObject("ADODB.Connection")
+myconn.Open("Driver=MySQL ODBC 3.51 Driver; Server=tw100018629;port:3306; Database=test; uid=L8BI0; pwd=L8BI02010;")
+Set myrs = Server.CreateObject("ADODB.Recordset")
+
+
+btn_status=request("btn_status")			'回傳btn_status屬性
+yyx_id = trim(request("yyx_id"))			'回傳yyx_id的值
+if btn_status="Save" then					'如果btn_status屬性為save執行以下程式
+	week = trim(request("week"))			'回傳name為week的值給week變數
+	site=trim(request("site_ddl"))
+	stage=trim(request("stage_ddl"))
+	y_factor=trim(request("y_factor"))
+	op_id=trim(request("op_id"))
+	benefit=trim(request("benefit"))
+	x_factor=trim(request("x_factor"))
+	
+	inference=trim(request("inference"))
+	int_owner=trim(request("int_owner"))
+	fun_owner=trim(request("fun_owner"))
+	status=trim(request("status"))
+	description=trim(request("description"))
+	S=trim(request("S_ddl"))
+	real_benefit=trim(request("real_benefit"))
+	myStr = "delete from test.yyx_analysis where yyx_id='" & yyx_id & "'"			'將資料庫內的yyx_id與回傳的yyx_id的值做比較一樣的話就刪除
+	set myrsTemp = myconn.Execute(myStr)		'執行sql
+	
+	'將資料新增至資料庫
+	myStr = "INSERT INTO test.yyx_analysis (week, site, stage, y_factor, op_id, benefit, x_factor, inference, int_owner, fun_owner, status, description, S, real_benefit, lm_user, create_time)"
+	myStr = myStr & " VALUES ('" & week & "','" & site & "','" & stage & "','" & y_factor & "','" & op_id & "','" & benefit & "','" & x_factor & "','" & inference & "'"
+	myStr = myStr & " ,'" & int_owner & "','" & fun_owner & "','" & status & "','" & description & "','" & S & "', '" & real_benefit & "', 'System',now())"
+	Set myrs = myconn.Execute("SET NAMES 'big5'")			'定義編碼
+	Set myrs = myconn.Execute(myStr)			'執行sql
+	
+	'新增完將變數清空
+	week=""
+	site=""
+	stage=""
+	y_factor=""
+	op_id=""
+	benefit=""
+	x_factor=""
+	
+	inference=""
+	int_owner=""
+	fun_owner=""
+	status=""
+	description=""
+	real_benefit=""
+End if
+	
+if btn_status="Delete" then			'如果btn_status屬性為delete執行以下程式
+	myStr = "delete from test.yyx_analysis where yyx_id='" & yyx_id & "'"			'將資料庫內的yyx_id與回傳的yyx_id的值做比較一樣的話就刪除
+	set myrsTemp = myconn.Execute(myStr)			'執行sql
+	yyx_id = ""			'刪除完將變數清空
+end if
+
+sql = "SELECT yyx_id, week, site, stage, y_factor, op_id, benefit, x_factor, inference, int_owner, fun_owner, status, description, S, real_benefit FROM test.yyx_analysis where yyx_id='" & yyx_id & "' order by week,site, stage "
+'response.write(sql)
+myrs.CursorLocation = 3	
+myrs.Open "SET NAMES 'big5'", myconn
+myrs.Open sql, myconn
+if Not myrs.EOF then
+	week=myrs.Fields("week")
+	site=myrs.Fields("site")
+	stage=myrs.Fields("stage")
+	y_factor=myrs.Fields("y_factor")
+	
+	op_id=myrs.Fields("op_id")
+	benefit=myrs.Fields("benefit")
+	x_factor=myrs.Fields("x_factor")
+	inference=myrs.Fields("inference")
+	int_owner=myrs.Fields("int_owner")
+	
+	fun_owner=myrs.Fields("fun_owner")
+	status=myrs.Fields("status")
+	description=myrs.Fields("description")
+	S=myrs.Fields("S")
+	real_benefit=myrs.Fields("real_benefit")
+	
+end if
+myrs.close
+
+ss="style='cursor:pointer' onClick='document.query.submit();'"
+%>
+
+<script Language="javascript" src="./calendar/calendar_1/calendar.js"></script>
+<script>
+function jsSave(){			//執行function為jssave的js
+	var site;				//宣告變數
+	var stage;
+	var S;
+	site=document.query.site_ddl.selectedIndex;			//將下拉式選單內的值給變數
+	stage=document.query.stage_ddl.selectedIndex;
+	S=document.query.S_ddl.selectedIndex;
+	
+	if (document.query.week.value=='') {		//如果接收到的值是空值
+		alert('Pls select week');}				//跳出提醒視窗
+	else if (site==0) {
+		alert('Pls select site');
+		document.query.site.focus();}			//focus欄位
+	else if (stage==0) {
+		alert('Pls input stage');
+		document.query.stage.focus();}
+	else if (document.query.y_factor.value=='') {
+		alert('Pls input y_factor');
+		document.query.y_factor.focus();}
+	else if (document.query.op_id.value=='') {
+		alert('Pls input op_id');
+		document.query.op_id.focus();}
+	else if (document.query.benefit.value=='') {
+		alert('Pls input benefit');
+		document.query.benefit.focus();}
+	else if (document.query.x_factor.value=='') {
+		alert('Pls input x_factor');
+		document.query.x_factor.focus();}
+	else if (document.query.inference.value=='') {
+		alert('Pls input inference');
+		document.query.inference.focus();}
+	else if (document.query.int_owner.value=='') {
+		alert('Pls input int_owner');
+		document.query.int_owner.focus();}
+	else if (document.query.fun_owner.value=='') {
+		alert('Pls input fun_owner');
+		document.query.fun_owner.focus();}
+	else if (document.query.status.value=='') {
+		alert('Pls input status');
+		document.query.status.focus();}
+	else if (document.query.description.value=='') {
+		alert('Pls input description');
+		document.query.description.focus();}
+	else if (S==0) {
+		alert('Pls input S');
+		document.query.S.focus();}
+	else if (document.query.real_benefit.value=='') {
+		alert('Pls input real_benefit');
+		document.query.real_benefit.focus();}
+	else {
+		document.query.btn_status.value="Save";			//將save給btn_status
+		this.query.submit();}
+}
+function jsDelete(str1,str2){							//執行function為jsdelete的js
+	if (confirm ("確定刪除? " + str2))			//跳出提醒視窗
+	{
+		document.query.main_pk.value=str1;				//將str1給yyx_id
+		document.query.btn_status.value="Delete";		//將delete給btn_status
+		this.query.submit();
+	}	
+}
+function jsUpdate(str1){				//執行function為jsupdate的js
+	document.query.main_pk.value=str1;	//將str1給yyx_id
+	document.query.btn_status.value="Update";		//將update給btn_status
+	this.query.submit();
+}
+</script>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=big5">
+<title>ARY_FIB_DATA</title>
+</head>
+<body>
+<form name="query">
+<input type="hidden" name="main_pk" value="<%=main_pk%>">
+<input type="hidden" name="btn_status">
+<table>
+	
+    <!--<td>Site</td>
+    <td><select name="site_ddl">
+      <option value="0">請選擇</option>
+<%
+	str = "ARRAY,CF"
+	ary = Split(str,",")
+	for i=0 to ubound(ary)
+		if ary(i)=site then
+			response.Write("<option value='" & ary(i) & "' selected>" & ary(i) & "</option>")
+		else
+			response.Write("<option value='" & ary(i) & "'>" & ary(i) & "</option>")
+		end if
+	next
+%>
+    </select></td>-->
+	<tr>
+    <td>sheet_id</td>
+    <td><input type="text" name="sheet_id" size="10" value="<%=sheet_id%>"></td>
+    <td>laser_defect</td>
+    <td><input type="text" name="laser_defect" size="10" value="<%=laser_defect%>"></td>
+    <td>cut_op_id</td>
+    <td><input type="text" name="cut_op_id" size="10" value="<%=cut_op_id%>"></td>
+    <td>x座標</td>
+    <td><input type="text" name="x" size="6" value="<%=x%>"></td>
+    <td>y座標</td>
+    <td><input type="text" name="y" size="6" value="<%=y%>"></td>
+	<td>gate線號</td>
+    <td><input type="text" name="gate" size="6" value="<%=gate%>"></td>
+    <td>data線號</td>
+    <td ><input type="text" name="data" size="6" value="<%=data%>"></td>
+  </tr>
+  <tr>    
+    <td>defect_code</td>
+    <td><input type="text" name="defect_code" size="20" value="<%=defect_code%>"></td>
+	<td>sub_defect</td>
+    <td ><input type="text" name="sub_defect" size="20" value="<%=sub_defect%>"></td>
+</tr>
+<tr>    
+	<td>fib_photo1</td>
+	<td><input type="text" name="fib_photo1" size="22" value="<%=fib_photo1%>"></td>
+	<td>fib_photo2</td>
+	<td><input type="text" name="fib_photo2" size="22" value="<%=fib_photo2%>"></td>
+	<td>fib_photo3</td>
+	<td><input type="text" name="fib_photo3" size="22" value="<%=fib_photo3%>"></td>
+</tr>
+<tr>
+	<td>owner</td>
+	<td><input type="text" name="owner" size="22" value="<%=owner%>"></td>
+	<td>mechanism</td>
+	<td><input type="text" name="mechanism" size="22" value="<%=mechanism%>"></td>
+	<td>action</td>
+	<td><input type="text" name="action" size="22" value="<%=action%>"></td>
+</tr>
+<tr>
+	<td>element</td>
+	<td><input type="text" name="element" size="22" value="<%=element%>"></td>
+	<td>numerical_value</td>
+	<td><input type="text" name="numerical_value" size="22" value="<%=numerical_value%>"></td>
+	<td>&nbsp;</td>
+    <td><input type="button" name="Submit" value="Save" style="width:60px;cursor:hand" onClick="jsSave()"></td>
+	</tr>
+</table>
+<hr>
+
+<table border="5" cellspacing="0" cellpadding="2" style="font-size:14px;" width="850px">
+<tr bgcolor="#66CCFF" align="center" rules = none>
+<td>sheet_id</td>
+<td>laser_defect</td>
+<td>cut_op_id</td>
+<td>x座標</td>
+<td>y座標</td>
+<td>gate線號</td>
+<td>data線號</td>
+<td>defect_code</td>
+<td>sub_defect</td>
+<td>logoff_time</td>
+<td>eqp_chamber</td>
+<td>fib_photo1</td>
+<td>fib_photo2</td>
+<td>fib_photo3</td>
+<td>lm_time</td>
+<td>owner</td>
+<td>mechanism</td>
+<td>action</td>
+<td>element</td>
+<td>numerical_value</td>
+<td>Edit</td>
+</tr>
+<%
+'sql = "SELECT afd.main_pk, afd.sheet_id, afd.laser_defect, afd.cut_op_id, afd.x, afd.y, afd.gate, afd.data, afd.defect_code, afd.sub_defect,afd.logoff_time, afd.eqp_chamber, afd.fib_photo1, afd.fib_photo2, afd.fib_photo3, afd.lm_time, afd.owner, afd.mechanism, afd.action ,afdd.pk, afdd.main_pk, afdd.element, afdd.numerical_value FROM l8bi0.l8b_ARY_FIB_Data afd, l8bi0.l8b_ARY_FIB_Data_detail afdd where afd.main_pk = afdd.main_pk order by lm_time desc "'
+sql = "SELECT main_pk, sheet_id, laser_defect, cut_op_id, x, y, gate, data, defect_code, sub_defect, logoff_time, eqp_chamber, fib_photo1, fib_photo2, fib_photo3, lm_time, owner, mechanism, action FROM l8bi0.l8b_ARY_FIB_Data order by lm_time desc"
+'response.write(sql)	
+myrs.CursorLocation = 3	
+myrs.Open "SET NAMES 'big5'", myconn
+myrs.Open sql, myconn
+
+if Not myrs.EOF then
+	for i = 1 to myrs.RecordCount
+		main_pk = myrs.Fields("main_pk")
+		sheet_id = myrs.Fields("sheet_id")
+		laser_defect = myrs.Fields("laser_defect")
+		cut_op_id = myrs.Fields("cut_op_id")
+		x = myrs.Fields("x")
+		y = myrs.Fields("y")
+		gate = myrs.Fields("gate")
+		data = myrs.Fields("data")
+		defect_code = myrs.Fields("defect_code")
+		sub_defect = myrs.Fields("sub_defect")
+		logoff_time = myrs.Fields("logoff_time")
+		eqp_chamber = myrs.Fields("eqp_chamber")
+		fib_photo1 = myrs.Fields("fib_photo1")
+		fib_photo2 = myrs.Fields("fib_photo2")
+		fib_photo3 = myrs.Fields("fib_photo3")
+		lm_time = myrs.Fields("lm_time")
+		owner = myrs.Fields("owner")
+		mechanism = myrs.Fields("mechanism")
+		action = myrs.Fields("action")
+
+%>
+<tr>
+	<!--將資料庫值帶入表格中-->
+
+	<td><%=sheet_id%></td>
+	<td><%=laser_defect%></td>
+	<td><%=cut_op_id%></td>
+	<td><%=x%></td>
+	<td><%=y%></td>
+	<td><%=gate%></td>
+	<td><%=data%></td>
+	<td><%=defect_code%></td>
+	<td><%=sub_defect%></td>
+	<td><%=logoff_time%></td>
+	<td><%=eqp_chamber%></td>
+	<td><%=fib_photo1%></td>
+	<td><%=fib_photo2%></td>
+	<td><%=fib_photo3%></td>
+	<td><%=lm_time%></td>
+	<td><%=owner%></td>
+	<td><%=mechanism%></td>
+	<td><%=action%></td>
+	<td><%=element%></td>
+	<td><%=numerical_value%></td>
+
+	<td align="center"><input type="button" name="btn" value="Update" OnClick="jsUpdate('<%=main_pk%>')">
+		&nbsp;<input type="button" name="Submit" value="Delete" style="width:60px;cursor:hand;background-color:rgb(247, 111, 134)" onClick="jsDelete('<%=main_pk%>','<%=sheet_id%>')"></td>
+</tr>
+<%
+		myrs.movenext
+	next
+end if
+myrs.close
+
+%>
+</table>
+</form>
+</body>
+</html>
+<%
+myconn.close
+%>
+
+
