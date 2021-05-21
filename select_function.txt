@@ -1,0 +1,233 @@
+ onClick="window.open('http://tw100018629/L8BI0_WEB/FIB/search.asp?query_text=<%=query_text%>','_self')"
+
+======================================================================================================================================================
+
+	<center>
+		搜尋：<input type="text" id="query_text" name = "query_text" value="<%=query_text%>" >&nbsp;&nbsp;
+		
+	<%
+		
+			'query_text = Request("query_text")
+			'query_text = Server.UrlEncode(query_text)
+			'response.write("<a href='http://tw100018629/L8BI0_WEB/FIB/search.asp?query_text=&query_text&' target=_self>查詢</a>")
+
+	%>
+
+======================================================================================================================================================
+
+	where trim(defect_code) like '%" & search_defect & "%' or trim(element) like '%" & search_element & "%'
+
+
+======================================================================================================================================================
+
+
+
+=======================================================================================================================================================
+   <table border = "0" cellpadding = "2" width = "99%">
+        <tr bgcolor = "lightgreen"><font size = 2></tr>
+            <td>內容</td>
+        <% do while not rs1.eof %>
+            <tr>
+                <td><font size = 2></td>
+                    <a href = ARY_FIB_DATA.asp?main_pk=<%=rs1("main_pk")%>><%=rs1("item1")%></font></a>
+            </tr>
+        <%
+		rs1.movenext
+        loop
+        rs1.close
+        conn.close
+        %>
+
+
+===================================================================================================================================================
+
+
+
+<html>
+<head>
+<meta http-equiv = "Content-Type" content = "text/html; charset = big5">
+<title>查詢結果</title>
+</head>
+
+
+<%
+    dim Dsear
+    Dsear = request.querystring("D1")
+    'response.write(Dsear)
+    'response.end()
+
+%>
+<table class="zebra">
+	<thead>
+		<tr>
+			<th>sheet_id</th>
+			<th>laser_defect</th>
+			<th>cut_op_id</th>
+			<th>x座標</th>
+			<th>y座標</th>
+			<th>defect_code</th>
+			<th>sub_defect</th>
+			<th>run_time</th>
+			<th>eqp_chamber</th>
+			<th>fib_photo_1</th>
+			<th>fib_photo_2</th>
+			<th>fib_photo_3</th>
+			<th>lm_time</th>
+			<th>mechanism</th>
+			<th>action</th>
+			<th>element</th>
+			<th>Edit</th>
+		</tr>
+	</thead>
+<%
+
+
+    set conn = server.createobject("adodb.connection")
+    conn.Open("Driver=MySQL ODBC 3.51 Driver; Server=tw100018629;port:3306; Database=l8bi0; uid=L8BI0; pwd=L8BI02010;")
+    set rs1 = server.createobject("adodb.recordset")      
+    rs1.Open "SET NAMES 'big5'", conn
+   
+
+    sql= "SELECT main_pk, sheet_id, laser_defect, cut_op_id, x, y, defect_code,  sub_defect, run_time, eqp_chamber, fib_photo_1, fib_photo_2, fib_photo_3, lm_time, mechanism, action, (SELECT GROUP_CONCAT(concat(element, ':', numerical_value)) FROM l8b_ARY_FIB_Data_detail d where d.main_pk = a.main_pk having MAX(d.main_pk)) as element from l8b_ARY_FIB_Data a where a.defect_code like '%"& Dsear &"%' "
+    rs1.Open sql, conn,0,1,1
+
+    'if Not rs1.EOF then
+     'for i = 1 to rs1.RecordCount
+     do while not rs1.eof
+        main_pk = rs1.Fields("main_pk")
+        sheet_id = rs1.Fields("sheet_id")
+        laser_defect = rs1.Fields("laser_defect")
+        cut_op_id = rs1.Fields("cut_op_id")
+        x = rs1.Fields("x")
+        y = rs1.Fields("y")
+        defect_code = rs1.Fields("defect_code")
+        sub_defect = rs1.Fields("sub_defect")
+        run_time = rs1.Fields("run_time")
+        eqp_chamber = rs1.Fields("eqp_chamber")
+        fib_photo_1 = rs1.Fields("fib_photo_1")
+        fib_photo_2 = rs1.Fields("fib_photo_2")
+        fib_photo_3 = rs1.Fields("fib_photo_3")
+        lm_time = rs1.Fields("lm_time")
+        mechanism = rs1.Fields("mechanism")
+        action = rs1.Fields("action")
+        element = rs1.Fields("element")
+
+%>
+
+<tbody>
+
+<tr>
+    <td><%=rs1("sheet_id")%></td>       
+    <td><%=rs1("laser_defect")%></td>
+    <td><%=rs1("cut_op_id")%></td>
+    <td><%=rs1("x")%></td>
+    <td><%=rs1("y")%></td>      
+    <td><%=rs1("defect_code")%></td>
+    <td><%=rs1("sub_defect")%></td>
+    <td><%=rs1("run_time")%></td>
+    <td><%=rs1("eqp_chamber")%></td>
+
+    <td>
+        <%			 
+            if rs1("fib_photo_1")  <> "" then
+                response.Write("<a href='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_1") &"' target=_blank><img src='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_1") &"' width='60' height='30'></a>")
+            end if
+        %><br>	
+        <input type="button" name="fib_photo_1" value="變更圖片" style="cursor:hand" onClick="window.open('http://tw100018629/L8BI0_WEB/FIB/photo_up.asp?main_pk=<%=main_pk%>','_self')">				
+    </td>
+    
+    <td>
+        <%			
+            if rs1("fib_photo_2")  <> ""  then
+                response.Write("<a href='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_2") &"' target=_blank><img src='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_2") &"' width='60' height='30'></a>")
+            end if
+        %><br>	
+        <input type="button" name="fib_photo_2" value="變更圖片" style="cursor:hand" onClick="window.open('http://tw100018629/L8BI0_WEB/FIB/photo_up_photo2.asp?main_pk=<%=main_pk%>','_self')">		
+    </td>
+
+    <td>
+        <%			
+            if rs1("fib_photo_3")  <> ""  then
+                response.Write("<a href='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_3") &"' target=_blank><img src='\L8BI0_WEB\FIB\upload_Image\" & rs1("fib_photo_3") &"' width='60' height='30'></a>")
+            end if
+        %><br>	
+        <input type="button" name="fib_photo_3" value="變更圖片" style="cursor:hand" onClick="window.open('http://tw100018629/L8BI0_WEB/FIB/photo_up_photo3.asp?main_pk=<%=main_pk%>','_self')">			
+    </td>
+
+    <td><%=rs1("lm_time")%></td>
+    <td><%=rs1("mechanism")%></td>
+    <td><%=rs1("action")%></td>
+    <td><%=rs1("element")%></td>
+
+    <td><a href = ARY_FIB_DATA.asp?main_pk=<%=rs1("main_pk")%>></a></td>
+
+<%
+		rs1.movenext
+	loop
+end if
+%>
+
+<style>	
+tbody {
+  font: normal medium/1.4 sans-serif;
+}
+.zebra thead{
+	background:#3cbde4;
+}
+.zebra {
+  border-collapse: collapse;
+  width: 100%;
+}
+.zebra th, td {
+  padding: 0.25rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  font: normal medium/1.4 sans-serif;
+}
+.zebra tbody tr:hover {
+  background: rgb(248, 248, 195);
+}
+</style>
+</tbody>
+</table>
+</form>
+</body>
+</html>
+<%
+rs1.close
+conn.close
+%>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
