@@ -1,0 +1,116 @@
+select * from (
+	select  tos.board_id, tos.retype, tos.x_cord, tos.y_cord, tos.dft_mode,
+		tos.rp_flag, tos.repair_opid, tos.model_no,
+		aidi.pox_x, aidi.pox_y, aidi.eqp_id, aidi.recipe_id, aidi.defect_size,
+		aidi.op_key, aidi.tft_sheet_id, aidi.current_def_code_desc,
+		case when (
+			cast(tos.x_cord as bigint) >= cast(aidi.pox_x as bigint)-5000
+			and cast(tos.x_cord as bigint) <= cast(aidi.pox_x as bigint)+5000
+			and cast(tos.y_cord as bigint) >= cast(aidi.pox_y as bigint)-5000
+			and cast(tos.y_cord as bigint) <= cast(aidi.pox_y as bigint)+5000
+		)then 1 else 0 as is_match
+	from eng_data.l8b_array_tos_rpf tos,(
+		select  tft_sheet_id, tft_chip_id, trim(op_key) op_key,
+			pox_x, pox_y. eqp_id, recipe_id, defect_size, current_def_code_desc
+		from eng_data.l8b_array_h_aidi_secdefect
+		where 	1=1
+			and test_time >= CURRENT_TIMESTAMP - INTERVAL '20 DAYS'
+			and trim(signal_no) not in (99999,0,1)
+			and trim(gate_no) not in (99999,0,1)
+			and trim(pox_x) not in (99999,0,1)
+			and trim(pox_y) not in (99999,0,1)
+			and trim(tft_chip_no) not in (999)
+			and trim(current_def_code_desc) is not null
+		) aidi
+
+	where 	1=1
+		and tos.ddate_ttime >= CURRENT_TIMESTAMP - INTERVAL '3 DAYS'
+		and tos.board_id = aidi.tft_sheet_id
+		and tos.chip_id = aidi.tft_chip_id
+		and trim(tos.x_cord) not in (0,1)
+		and trim(tos.y_cord) not in (0,1)
+		and trim(tos.data_ax) not in (99999)
+		and trim(tos.gate_ax) not in (99999)
+		and trim(tos.lot_id) like '%00'
+		and trim(tos.chip_seq_no) not in (999)
+		and trim(tos.retype) not in ('No-Judement')
+		and trim(tos.retype) is not null
+) a
+where is_match = 1
+union all
+select  tos.board_id, tos.retype, tos.x_cord, tos.y_cord, tos.dft_mode, tos.rp_flag,
+	tos.repair_opid, tos.model_no, aidi.pox_x, aidi.pox_y, aidi.eqp_id,
+	aidi.recipe_id, aidi.defect_size, aidi.op_key, aidi.tft_sheet_id, aidi.current_def_code_desc,
+	case when (
+		cast(tos.x_cord as bigint) >= cast(aidi.pox_x as bigint)-5000
+		and cast(tos.x_cord as bigint) <= cast(aidi.pox_x as bigint)+5000
+		and cast(tos.y_cord as bigint) >= cast(aidi.pox_y as bigint)-5000
+		and cast(tos.y_cord as bigint) <= cast(aidi.pox_y as bigint)+5000
+	)then 1 else 0 as is_match
+from eng_data.l8b_array_tos_rpf tos,(
+	select	tft_sheet_id, tft_chip_id, trim(op_key) op_key, pox_x, pox_y,
+		eqp_id, recipe_id, defect_size, current_def_code_desc
+	from eng_data.l8b_array_h_aidi_secdefect
+	where 	1=1
+		and test_time >= CURRENT_TIMESTAMP - INERVAL '20 DAYS'
+		and trim(signal_no) not in (99999,0,1)
+		and trim(gate_no) not in (99999,0,1)
+		and trim(pox_x) not in (99999,0,1)
+		and trim(pox_y) not in (99999,0,1)
+		and trim(tft_chip_no) not in (999)
+		and trim(current_def_code_desc) is not null
+	)aidi
+where 1=1
+	and tos.ddate_ttime >= CURRENT_TIMESTAMP - INTERVAL '5 DAYS'
+	and tos.board_id = aidi.tft_sheet_id
+	and tos.chip_id = aidi.tft_chip_id
+	and trim(tos.x_cord) not in (0,1)
+	and trim(tos.y_cord) not in (0,1)
+	and trim(tos.data_ax) not in (99999)
+	and trim(tos.gate_ax) not in (99999)
+	and trim(tos.retype) not in ('NO-Judement')
+	and trim(tos.retype) is not null
+	and tos.board_id not in (
+		select a.board_id
+		from (
+			select tos.board_id, tos.reype, tos.x_cord, tos.y_cord,
+				tos.dft_mode, tos.rp_flag, tos.repair_opid, tos.model_no,
+				aidi.pox_x, aidi.pox_y, aidi.eqp_id, aidi.recipe_id, aidi.defect_size,
+				aidi.op_key, aidi.tft_sheet, aidi.current_def_code_desc,
+				case when(
+					cast(tos.x_cord as bigint) >= cast(aidi.pox_x as bigint)-5000
+					and cast(tos.x_cord as bigint) <= cast(aidi.pox_x as bigint)+5000
+					and cast(tos.y_cord as bigint) >= cast(aidi.pox_y as bigint)-5000
+					and cast(tos.y_cord as bigint) <= cast(aidi.pox_y as bigint)+5000)
+				then 1 else 0 end as is_match
+			from eng_data.l8b_array_tos_rpf tos,
+			(
+				select tft_sheet_id, tft_chip_id, trim(op_key) op_key,
+					pox_x, pox_y, eqp_id, recipe_id, defect_size, current_def_code_desc
+				from eng_data.l8b_array_h_aidi_secdefect
+				where 1=1
+					and test_time >= CURRNET_TIMESTAMP - INTERVAL '20 DAYS'
+					and trim(signal_no) not in (99999,0,1)
+					and trim(gate_no) not in (99999,0,1)
+					and trim(pox_x) not in (99999,0,1)
+					and trim(pox_y) not in (99999,0,1)
+					and trim(tft_chip_no) not in (999)
+			)aidi
+			where 1=1
+				and tos.ddate_ttime >= CURRENT_TIMESTAMP - INTERVAL '5 DAYS'
+				and tos.board_id = aidi.tft_sheet_id
+				and tos.chip_id = aidi.tft_sheet_id
+				and trim(tos.x_cord) not in (0,1)
+				and trim(tos.y_cord) not in (0,1)
+				and trim(tos.data_ax) not in (99999)
+				and trim(tos.gate_ax) not in (99999)
+				and trim(tos.lot_id) like '%00'
+				and trim(tos.chip_seq_no) not in (999)
+				and trim(tos.retype) not in ('NO-Judement')
+				and trim(tos.retype) is not null
+			)a
+		where a.is_match = 1
+	)
+			 
+				
+		
