@@ -1,0 +1,10 @@
+1. SELECT a.ACTUAL_RECIPE, a.PUMP_Q2_DISPENCE_SPEED_1, a.REPORT_TIME, a.TOOL_ID FROM l8b_ai.r2r_d1_kpc a, (SELECT TOOL_ID, MAX(REPORT_TIME) AS MAXTIME FROM l8b_ai.r2r_d1_kpc group by TOOL_ID) as Idview
+WHERE (a.TOOL_ID = Idview.TOOL_ID) AND (a.REPORT_TIME = Idview.maxtime)
+
+-- 抓最新日期的資料
+
+2. select concat(eqp1,eqp2) as EQP ,Recipe_Name, Depo_Time_Before, Depo_Time_After, Update_User, Update_Time
+from (select Recipe_Name, Depo_Time_Before, Depo_Time_After, Update_User, Update_Time, substring_index(eqp_id,'RES',1) eqp1, substring_index(eqp_id, 'RES', -1) eqp2 from l8b_ai.r2r_d1_kpc_offset order by Update_Time desc) a
+where 1=1 and concat(eqp1,eqp2) = 'FKB30'
+
+-- 欄位字串切割與合併，在印出所需欄位之資料
