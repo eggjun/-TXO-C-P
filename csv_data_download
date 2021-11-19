@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+# For M32R1 Rowdata Download
+import csv
+import mysql.connector
+# import re
+# import os
+# import pandas as pd
+# import numpy as np
+from glob import glob
+
+mydb = mysql.connector.connect(
+    host="TW100018629",
+    user="L8BI0",
+    passwd="L8BI02010",
+    database="L8BI0"
+)
+
+cur = mydb.cursor()
+
+try:
+    path = glob('csv/*.csv')    #指定要讀取檔案之路徑
+    
+    for j in range ( len(path) ):   #len(path)計算檔案長度(數量)
+        csv_name = path[j].split('\\')  #取得檔名
+        # print(csv_name[1])  #印出檔名
+
+        files = open(path[j], 'r')      #開啟檔案
+        csvreader = csv.reader(files)    #讀取檔案
+
+        rows = []   #建立空陣列
+        for row in csvreader:
+            rows.append(row)    #將每一行附加至行列表
+        # print(rows[6][1])   #印出op_id
+        # print(rows[7][1])   #印出EQP_id
+        # print(rows[1][1])   #印出sheet_id
+        # print(rows[3][1])   #印出model_no
+        # print(rows[12][1])  #印出時間
+        
+        for i in range(22,len(rows)):    #撈取指定範圍內之資料
+            if len(rows[i][3]) == 1 :    #判斷該欄位長度等於1，就執行，用於過濾不需要的資料
+                # print(rows[i][0], rows[i][3], float(rows[i][4]), rows[i][9], float(rows[i][10]))      
+
+                cur.execute('insert into l8bi0.l8b_ary_spc_ttp_csv_xy_value(csv_name, no, x_val, y_val, x, y, op_id, eqp_id, sheet_id, model_no, date) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',    #將資料新增至資料庫
+                            (csv_name[1], rows[i][0], float(rows[i][4]), float(rows[i][10]), rows[i][3], rows[i][9], rows[6][1], rows[7][1], rows[1][1], rows[3][1], rows[12][1]))
+
+            mydb.commit()  #執行這行才會真的寫入table
+
+    files.close()    #關閉檔案
+
+
+finally:
+     mydb.close()
+     print('Finish')
+
+   
