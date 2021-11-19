@@ -1,0 +1,72 @@
+ #-*- coding: utf-8 -*-
+ #撈取total pitch網頁csv清單
+
+from bs4 import BeautifulSoup
+import requests
+import mysql.connector
+import datetime
+import time
+from six.moves import urllib
+import csv
+from contextlib import closing
+
+save_excel = "\\Tw100018629\wwwroot\L8BI0_WEB\TTP\csv"  #儲存CSV檔路徑
+
+mydb = mysql.connector.connect(
+    host="TW100018629",
+    user="L8BI0",
+    passwd="L8BI02010",
+    database="L8BI0"
+)
+
+cur = mydb.cursor()
+
+try:
+
+    begin_date = (datetime.datetime.now() - datetime.timedelta(days=0)).strftime("%Y%m%d")    #抓取過去x天的時間
+    date_list = []    #放入陣列變數date_list
+    begin_date = datetime.datetime.strptime(begin_date, "%Y%m%d") #抓取現在時間放入變數begin_date
+    end_date = datetime.datetime.strptime(time.strftime('%Y%m%d', time.localtime(time.time())), "%Y%m%d")
+    while begin_date <= end_date:   #while起始日小於等於結束日
+        date_str = begin_date.strftime("%Y%m%d")    #將時間日期轉為字串放入字串變數date_str
+        date_list.append(date_str)  #加進date_list中
+        begin_date += datetime.timedelta(days=1)    #起始日往回加1天
+
+    for i in range (0, len(date_list)):   #從第一筆(排序0)資料開始跑, len(date_list)計算時間資料有幾筆
+        url = ("http://hlweb001.corpnet.auo.com/akmtp200_cim/CSVFile/" + date_list[i])    #將網址與時間串接成新的網址放入變數url
+        url_response = urllib.request.urlopen(url)  #解析url中之網頁放入變數url_response
+        url_search = url_response.read()    #將讀取到的網頁內容放入變數url_search
+        url_soup = BeautifulSoup(url_search, 'html.parser') #解析url_search網頁的html放入變數url_soup
+        current_url = url_soup.find_all('a')    #抓取url_soup網頁元素中所有<a>標籤放入變數current_url 
+          
+        
+        if len(current_url) == 1:   #如果current_url<a>標籤數等於1就跳過繼續下一筆
+            continue
+        
+        # print(url)    #印出有資料的含日期網址
+
+        # 若是使用list來篩選關鍵字字串的方法
+        # str_match = [s for s in current_csv if 'ADT' in s]    #從list中找出有ADT之字串 
+        
+        for j in range(1, len(current_url)):    #排除第一筆<a>標籤，從第二筆(排序1)資料開始跑，len(current_url)計算<a>標籤資料有幾筆
+            current_csv = current_url[j].text   #抓取每一筆current_url資料轉換成text放入變數current_csv            
+            if 'ANL-TP' in current_csv:     #判斷current_csv中是否含有關鍵字
+                date_csv = date_list[i] + ' ' + current_csv     #將對應日期之csv檔名以空格間隔放入變數date_csv
+                # print(date_csv)     #印出含有日期之篩選後的csv檔名
+                date_csv_split = date_csv.split(' ')    #將date_csv以空格做分割放入變數date_csv_split，用來將日期與csv檔名區隔開以便後續存入db
+                csv_name_split = date_csv_split[1].split('_')   #將date_csv_split[1]以'_'做分割放入變數csv_name_split
+                model = csv_name_split[5].split('-')    #將csv_name_split[5]以'-'做分割放入變數model，用來取得檔名中的model以便後續存入db
+                
+                # cur.execute('insert into l8bi0.l8b_ary_spc_ttp_csv(date_time, csv_name, model) values (%s, %s, %s)',    #將資料新增至資料庫
+                #             (date_csv_split[0], date_csv_split[1], model[0]))
+
+                # mydb.commit()  #執行這行才會真的寫入table 
+
+    
+        
+    
+   
+
+finally:
+    mydb.close()
+    print('Finish')
