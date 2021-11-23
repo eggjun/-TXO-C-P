@@ -1,0 +1,58 @@
+ #-*- coding: utf-8 -*-
+ #撈取total pitch網頁csv清單
+
+from bs4 import BeautifulSoup
+import requests
+import datetime
+import time
+from six.moves import urllib
+import csv
+
+try:
+
+    begin_date = (datetime.datetime.now() - datetime.timedelta(days=313)).strftime("%Y%m%d")    #抓取過去x天的時間
+    date_list = []    #放入陣列變數date_list
+    begin_date = datetime.datetime.strptime(begin_date, "%Y%m%d") #抓取現在時間放入變數begin_date
+    end_date = datetime.datetime.strptime(time.strftime('%Y%m%d', time.localtime(time.time())), "%Y%m%d")
+    while begin_date <= end_date:   #while起始日小於等於結束日
+        date_str = begin_date.strftime("%Y%m%d")    #將時間日期轉為字串放入字串變數date_str
+        date_list.append(date_str)  #加進date_list中
+        begin_date += datetime.timedelta(days=1)    #起始日往回加1天
+
+    for i in range (0, len(date_list)):   #從第一筆(排序0)資料開始跑, len(date_list)計算時間資料有幾筆
+        url = ("http://hlweb001.corpnet.auo.com/akmtp200_cim/CSVFile/" + date_list[i])    #將網址與時間串接成新的網址放入變數url
+        url_response = urllib.request.urlopen(url)  #解析url中之網頁放入變數url_response
+        url_search = url_response.read()    #將讀取到的網頁內容放入變數url_search
+        url_soup = BeautifulSoup(url_search, 'html.parser') #解析url_search網頁的html放入變數url_soup
+        current_url = url_soup.find_all('a')    #抓取url_soup網頁元素中所有<a>標籤放入變數current_url           
+        
+        if len(current_url) == 1:   #如果current_url<a>標籤數等於1就跳過繼續下一筆
+            continue
+        
+        # print(url)    #印出有資料的含日期網址
+
+        csv_url = []    #設一個空陣列
+        for k in current_url:
+            csv_url_get = k.get('href')     #取得href內容
+            csv_url.append(csv_url_get)     #串接在同個陣列中
+        # print(csv_url)    
+        for p in range(1,len(csv_url)):     #從第二筆(排序為1)開始run, len(csv_url)計算總筆數
+            file_date = csv_url[p].split('/')[3]    #取得日期
+            file_name = csv_url[p].split('/')[-1]   #取得檔名
+            # print(file_date)
+            # print(file_name)
+            csv_get_url = 'http://hlweb001.corpnet.auo.com/akmtp200_cim/CSVFile/'+file_date+'/'+file_name   #將下載連結與日期檔名作串接
+            # print(csv_get_url)
+
+                
+            # if  'M32R1' in file_name:       #判斷是否含有關鍵字  
+            #     if 'ANL-TP' in file_name:         
+            #         f = requests.get(csv_get_url)   #取得連結
+                    
+            #         with open(file_name, 'wb') as code:     #file_name為儲存的檔名
+            #             code.write(f.content)
+
+
+finally:
+   
+    print('Finish')
